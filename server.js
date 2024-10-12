@@ -11,7 +11,7 @@ connectDB();
 
 
 app.use(cors({
-    origin: 'http://localhost:3000', // Update to your frontend's URL
+    origin: 'https://social-media-beryl-tau.vercel.app/', // Update to your frontend's URL
     methods: ['GET', 'POST'],
     credentials: true,
   }));
