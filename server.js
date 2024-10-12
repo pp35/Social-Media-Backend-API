@@ -11,14 +11,14 @@ connectDB();
 
 
 app.use(cors({
-    origin: 'https://social-media-beryl-tau.vercel.app/', // Update to your frontend's URL
+    origin: 'https://social-media-beryl-tau.vercel.app/',
     methods: ['GET', 'POST'],
     credentials: true,
   }));
 app.use(express.json());
-// app.get('/',(req,res)=>{
-//     res.send("Hello")
-// })
+app.get('/',(req,res)=>{
+    res.send("Welcome to Social Media Backend Api")
+})
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/friends', friendRoutes);
