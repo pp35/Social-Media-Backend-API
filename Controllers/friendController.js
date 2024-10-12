@@ -1,4 +1,4 @@
-const FriendRequest = require('../models/FriendRequest');
+const FriendRequest = require('../models/friendRequest');
 const User = require('../models/User');
 
 const sendFriendRequest = async (req, res) => {
