@@ -14,7 +14,7 @@ app.use(cors({
     origin: 'https://social-media-beryl-tau.vercel.app/',
     methods: ['GET', 'POST'],
     credentials: true,
-  }));
+}));
 app.use(express.json());
 app.get('/',(req,res)=>{
     res.send("Welcome to Social Media Backend Api")
