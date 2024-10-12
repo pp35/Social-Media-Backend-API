@@ -1,3 +1,0 @@
-poornimapandey3590
-3kMw61eZpSLMev7w
-mongodb+srv://poornimapandey3590:<db_password>@cluster0.ito1r.mongodb.net/
