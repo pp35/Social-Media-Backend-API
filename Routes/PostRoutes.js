@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.post('/', auth, createPost);
 router.post('/comment', auth, addComment);
-router.post('/like', auth, likePost); // Bonus: Like a post
+router.post('/like', auth, likePost); 
 router.get('/feed', auth, getFeed);
 
 module.exports = router;
