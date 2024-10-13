@@ -1,67 +1,75 @@
-const FriendRequest = require('../models/friendRequest');
 const User = require('../models/User');
+const FriendRequest = require('../models/friendRequest');
 
-const sendFriendRequest = async (req, res) => {
-  const { receiverId } = req.body; // The ID of the user to send the request to
-  const senderId = req.user.id; // Assuming you're using middleware to get the logged-in user's ID
+// Send Friend Request
+exports.sendFriendRequest = async (req, res) => {
+    const { friendId } = req.body;
 
-  try {
-    const existingRequest = await FriendRequest.findOne({
-      sender: senderId,
-      receiver: receiverId
-    });
+    try {
+        const user = await User.findById(req.user.id);
+        const friend = await User.findById(friendId);
 
-    if (existingRequest) {
-      return res.status(400).json({ error: 'Friend request already sent' });
+        if (!friend) return res.status(404).send('User not found');
+        if (user.friends.includes(friendId)) return res.status(400).send('Already friends');
+
+        // Check if friend request already exists
+        const existingRequest = await FriendRequest.findOne({ sender: user._id, receiver: friendId });
+        if (existingRequest) return res.status(400).send('Friend request already sent');
+
+        // Create a new friend request
+        const newFriendRequest = new FriendRequest({
+            sender: user._id,
+            receiver: friend._id,
+        });
+
+        await newFriendRequest.save();
+        res.send('Friend request sent');
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-
-    const newRequest = new FriendRequest({ sender: senderId, receiver: receiverId });
-    await newRequest.save();
-
-    return res.status(201).json({ message: 'Friend request sent' });
-  } catch (error) {
-    return res.status(500).json({ error: 'Server error' });
-  }
 };
 
-const acceptFriendRequest = async (req, res) => {
-  const { requestId } = req.body;
+// Accept Friend Request
+exports.acceptFriendRequest = async (req, res) => {
+    const { requestId } = req.body;
 
-  try {
-    const request = await FriendRequest.findById(requestId);
-    if (!request) {
-      return res.status(404).json({ error: 'Friend request not found' });
+    try {
+        const friendRequest = await FriendRequest.findById(requestId).populate('sender receiver');
+        if (!friendRequest) return res.status(404).send('Friend request not found');
+
+        const { sender, receiver } = friendRequest;
+
+        // Add each other as friends
+        sender.friends.push(receiver._id);
+        receiver.friends.push(sender._id);
+
+        await sender.save();
+        await receiver.save();
+
+        // Update the status of the friend request
+        friendRequest.status = 'accepted';
+        await friendRequest.save();
+
+        res.send('Friend request accepted');
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-
-    request.status = 'accepted';
-    await request.save();
-
-    return res.status(200).json({ message: 'Friend request accepted' });
-  } catch (error) {
-    return res.status(500).json({ error: 'Server error' });
-  }
 };
 
-const rejectFriendRequest = async (req, res) => {
-  const { requestId } = req.body;
+// Reject Friend Request
+exports.rejectFriendRequest = async (req, res) => {
+    const { requestId } = req.body;
 
-  try {
-    const request = await FriendRequest.findById(requestId);
-    if (!request) {
-      return res.status(404).json({ error: 'Friend request not found' });
+    try {
+        const friendRequest = await FriendRequest.findById(requestId);
+        if (!friendRequest) return res.status(404).send('Friend request not found');
+
+        // Update the status to 'rejected'
+        friendRequest.status = 'rejected';
+        await friendRequest.save();
+
+        res.send('Friend request rejected');
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-
-    // Optionally, you can remove the friend request from the database
-    await FriendRequest.deleteOne({ _id: requestId });
-
-    return res.status(200).json({ message: 'Friend request rejected' });
-  } catch (error) {
-    return res.status(500).json({ error: 'Server error' });
-  }
-};
-
-module.exports = {
-  sendFriendRequest,
-  acceptFriendRequest,
-  rejectFriendRequest // Export the reject function
 };
